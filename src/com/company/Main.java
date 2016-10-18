@@ -3,8 +3,6 @@ package com.company;
 import jodd.json.JsonParser;
 import jodd.json.JsonSerializer;
 import spark.Spark;
-
-import java.lang.reflect.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,7 +76,14 @@ public class Main {
                     String body = request.body();
                     JsonParser parser = new JsonParser();
                     HashMap<String, String> msg = parser.parse(body);
-                    insertMessage(conn, msg.get("text"), 0);
+
+                    User user = selectUser(conn, msg.get("author"));
+                    if (user == null) {
+                        insertUser(conn, msg.get("author"));
+                        user = selectUser(conn, msg.get("author"));
+                    }
+
+                    insertMessage(conn, msg.get("text"), user.id);
                     return "";
                 }
         );
